@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0630"
+   LastUpgradeVersion = "0720"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D99E2D3E1AFCAF2200F36FCD"
+               BlueprintIdentifier = "D93C46FD1CD7582600CD334A"
                BuildableName = "Pcap_DNSProxy"
                BlueprintName = "Pcap_DNSProxy"
                ReferencedContainer = "container:Pcap_DNSProxy.xcodeproj">
@@ -23,36 +23,39 @@
       </BuildActionEntries>
    </BuildAction>
    <TestAction
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      buildConfiguration = "Debug">
+      shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D99E2D3E1AFCAF2200F36FCD"
+            BlueprintIdentifier = "D93C46FD1CD7582600CD334A"
             BuildableName = "Pcap_DNSProxy"
             BlueprintName = "Pcap_DNSProxy"
             ReferencedContainer = "container:Pcap_DNSProxy.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <AdditionalOptions>
+      </AdditionalOptions>
    </TestAction>
    <LaunchAction
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Release"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D99E2D3E1AFCAF2200F36FCD"
+            BlueprintIdentifier = "D93C46FD1CD7582600CD334A"
             BuildableName = "Pcap_DNSProxy"
             BlueprintName = "Pcap_DNSProxy"
             ReferencedContainer = "container:Pcap_DNSProxy.xcodeproj">
@@ -62,16 +65,16 @@
       </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
+      buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Release"
       debugDocumentVersioning = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D99E2D3E1AFCAF2200F36FCD"
+            BlueprintIdentifier = "D93C46FD1CD7582600CD334A"
             BuildableName = "Pcap_DNSProxy"
             BlueprintName = "Pcap_DNSProxy"
             ReferencedContainer = "container:Pcap_DNSProxy.xcodeproj">

@@ -19,9 +19,8 @@ https://sourceforge.net/projects/pcap-dnsproxy
 1.准备程序编译环境：编译前需要使用包管理工具安装，或者需要自行编译和安装依赖库
   * 依赖工具/库列表：
     * GCC/g++ 可访问 https://gcc.gnu.org 获取
-      * GCC 最低版本要求为 4.7 从此版本开始 GCC 正式支持 C++ 11 标准
-      * GCC 建议最低版本为 4.9.2 从此版本开始 GCC 完整支持 C++ 11 标准，4.9 之前的版本对 C++ 11 标准的实现有问题
-      * GCC 当前版本可使用 gcc --version 查看
+      * GCC 最低版本要求为 4.9 从此版本开始 GCC 完整支持 C++ 11 标准，4.9 之前的版本对 C++ 11 标准的实现有问题
+      * GCC 当前版本可使用 gcc --version 查看，使用旧版本 GCC 强行编译可能会出现无法预料的问题！
     * Bison 可访问 https://www.gnu.org/software/bison 获取
     * M4 可访问 https://www.gnu.org/software/m4 获取
     * Flex 可访问 http://flex.sourceforge.net 获取
@@ -38,13 +37,15 @@ https://sourceforge.net/projects/pcap-dnsproxy
         * autoheader
         * automake 可访问 https://www.gnu.org/software/automake 获取
         * libtool 可访问 https://www.gnu.org/software/libtool 获取
-      * 获得 root 权限后进入目录，运行 ./autogen.sh -> make -> make install 即可
+      * 获得 root 权限后进入目录，运行 ./autogen.sh -> ./configure -> make -> make install 即可
+      * 部分 Linux 发行版可能还需要 Libsodium-Dev 工具的支持
       * 部分 Linux 发行版可能还需要运行 ldconfig 刷新系统的库缓存
 
 2.编译 Pcap_DNSProxy 程序并配置程序属性
   * 切勿更改脚本的换行格式 (UNIX/LF)
   * 使用终端进入 Source/Scripts 目录，使用 chmod 755 Linux_Build.sh 使脚本获得执行权限
   * 使用 ./Linux_Build.sh 执行编译程序
+    * 添加参数 --enable-static 即 ./Linux_Build.sh --enable-static 可启用静态编译
     * 脚本所进行的操作：
       * CMake 将编译并在 Release 目录生成 Pcap_DNSProxy 和 KeyPairGenerator 程序
       * 设置 Pcap_DNSProxy 和 KeyPairGenerator 程序以及 PcapDNSProxyService 和 Pcap_DNSProxy.service 服务控制脚本的基本读写可执行权限

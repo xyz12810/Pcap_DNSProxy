@@ -1,6 +1,6 @@
 ﻿// This code is part of Pcap_DNSProxy
 // A local DNS server based on WinPcap and LibPcap
-// Copyright (C) 2012-2015 Chengr28
+// Copyright (C) 2012-2016 Chengr28
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -20,27 +20,30 @@
 #include "Base.h"
 
 //Global variables
-CONFIGURATION_TABLE Parameter;
-time_t StartTime;
+CONFIGURATION_TABLE Parameter, ParameterModificating;
+GLOBAL_STATUS GlobalRunningStatus;
 ALTERNATE_SWAP_TABLE AlternateSwapList;
 #if defined(ENABLE_LIBSODIUM)
-	DNSCURVE_CONFIGURATON_TABLE DNSCurveParameter;
+	DNSCURVE_CONFIGURATION_TABLE DNSCurveParameter, DNSCurveParameterModificating;
 #endif
-std::vector<std::wstring> ConfigFileList;
-#if (defined(PLATFORM_LINUX) || defined(PLATFORM_MACX))
-	std::vector<std::string> sConfigFileList;
-#endif
-std::vector<FILE_DATA> FileList_IPFilter, FileList_Hosts;
-std::vector<DIFFERNET_IPFILTER_FILE_SET> IPFilterFileSet[2U], *IPFilterFileSetUsing = &IPFilterFileSet[0], *IPFilterFileSetModificating = &IPFilterFileSet[1U];
-std::vector<DIFFERNET_HOSTS_FILE_SET> HostsFileSet[2U], *HostsFileSetUsing = &HostsFileSet[0], *HostsFileSetModificating = &HostsFileSet[1U];
+std::vector<FILE_DATA> FileList_Config, FileList_IPFilter, FileList_Hosts;
+std::vector<DIFFERNET_FILE_SET_IPFILTER> IPFilterFileSet[2U], *IPFilterFileSetUsing = &IPFilterFileSet[0], *IPFilterFileSetModificating = &IPFilterFileSet[1U];
+std::vector<DIFFERNET_FILE_SET_HOSTS> HostsFileSet[2U], *HostsFileSetUsing = &HostsFileSet[0], *HostsFileSetModificating = &HostsFileSet[1U];
 #if defined(ENABLE_PCAP)
 	std::deque<OUTPUT_PACKET_TABLE> OutputPacketList;
 #endif
-std::deque<DNSCACHE_DATA> DNSCacheList;
-std::mutex ErrorLogLock, CaptureLock, LocalAddressLock[NETWORK_LAYER_PARTNUM], DNSCacheListLock, IPFilterFileLock, HostsFileLock;
+std::list<DNS_CACHE_DATA> DNSCacheList;
+std::mutex ScreenLock, ErrorLogLock, CaptureLock, LocalAddressLock[NETWORK_LAYER_PARTNUM], DNSCacheListLock, IPFilterFileLock, HostsFileLock;
 #if defined(ENABLE_PCAP)
 	std::mutex OutputPacketListLock;
 #endif
 
 //Functions
-void __fastcall ConfigurationTableSetting(ConfigurationTable *Parameter);
+void __fastcall ConfigurationTableSetting(
+	ConfigurationTable *ConfigurationParameter);
+void __fastcall GlobalStatusSetting(
+	GlobalStatus *GlobalRunningStatusParameter);
+#if defined(ENABLE_LIBSODIUM)
+void __fastcall DNSCurveConfigurationTableSetting(
+	DNSCurveConfigurationTable *DNSCurveConfigurationParameter);
+#endif

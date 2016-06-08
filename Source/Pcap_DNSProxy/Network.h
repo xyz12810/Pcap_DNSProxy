@@ -1,6 +1,6 @@
 ﻿// This code is part of Pcap_DNSProxy
 // A local DNS server based on WinPcap and LibPcap
-// Copyright (C) 2012-2015 Chengr28
+// Copyright (C) 2012-2016 Chengr28
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,6 +21,7 @@
 
 //Global variables
 extern CONFIGURATION_TABLE Parameter;
+extern GLOBAL_STATUS GlobalRunningStatus;
 extern ALTERNATE_SWAP_TABLE AlternateSwapList;
 #if defined(ENABLE_PCAP)
 	extern std::deque<OUTPUT_PACKET_TABLE> OutputPacketList;
@@ -28,5 +29,23 @@ extern ALTERNATE_SWAP_TABLE AlternateSwapList;
 #endif
 
 //Functions
-bool __fastcall SelectTargetSocket(SOCKET_DATA *SockData, bool *&IsAlternate, size_t *&AlternateTimeoutTimes, const uint16_t Protocol, const bool IsLocal);
-bool __fastcall SelectTargetSocketMulti(std::vector<SOCKET_DATA> &SockDataList, const uint16_t Protocol);
+bool __fastcall SelectTargetSocket(
+	const size_t RequestType, 
+	SOCKET_DATA *TargetSocketData, 
+	bool **IsAlternate, 
+	size_t **AlternateTimeoutTimes, 
+	const uint16_t Protocol);
+bool __fastcall SelectTargetSocketMulti(
+	std::vector<SOCKET_DATA> &TargetSocketDataList, 
+	const uint16_t Protocol);
+SSIZE_T __fastcall SelectingResult(
+	const size_t RequestType, 
+	const uint16_t Protocol, 
+	std::vector<SOCKET_DATA> &SocketDataList, 
+	std::vector<SOCKET_SELECTING_DATA> &SocketSelectingList, 
+	char *OriginalRecv, 
+	const size_t RecvSize);
+void __fastcall MarkPortToList(
+	const uint16_t Protocol, 
+	const SOCKET_DATA *LocalSocketData, 
+	std::vector<SOCKET_DATA> &SocketDataList);

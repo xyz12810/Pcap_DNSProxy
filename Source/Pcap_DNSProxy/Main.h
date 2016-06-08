@@ -1,6 +1,6 @@
 ﻿// This code is part of Pcap_DNSProxy
 // A local DNS server based on WinPcap and LibPcap
-// Copyright (C) 2012-2015 Chengr28
+// Copyright (C) 2012-2016 Chengr28
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -20,18 +20,26 @@
 #include "Base.h"
 
 //Global variables
-extern CONFIGURATION_TABLE Parameter;
-extern time_t StartTime;
+extern CONFIGURATION_TABLE Parameter, ParameterModificating;
+extern GLOBAL_STATUS GlobalRunningStatus;
 #if defined(ENABLE_LIBSODIUM)
-	extern DNSCURVE_CONFIGURATON_TABLE DNSCurveParameter;
+	extern DNSCURVE_CONFIGURATION_TABLE DNSCurveParameter, DNSCurveParameterModificating;
 #endif
+extern std::mutex ScreenLock;
 
 //Functions
 #if defined(PLATFORM_WIN)
-	bool __fastcall ReadCommand(int argc, wchar_t *argv[]);
-	bool __fastcall FileNameInit(const wchar_t *OriginalPath);
-	bool __fastcall FirewallTest(const uint16_t Protocol);
+bool __fastcall ReadCommand(
+	int argc, 
+	wchar_t *argv[]);
+bool __fastcall FileNameInit(
+	const wchar_t *OriginalPath);
+bool __fastcall FirewallTest(
+	const uint16_t Protocol);
 #elif (defined(PLATFORM_LINUX) || defined(PLATFORM_MACX))
-	bool ReadCommand(int argc, char *argv[]);
-	bool FileNameInit(const char *OriginalPath);
+bool ReadCommand(
+	int argc, 
+	char *argv[]);
+bool FileNameInit(
+	const char *OriginalPath);
 #endif

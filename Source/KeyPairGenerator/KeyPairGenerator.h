@@ -1,6 +1,6 @@
 ﻿// This code is part of Pcap_DNSProxy
 // A local DNS server based on WinPcap and LibPcap
-// Copyright (C) 2012-2015 Chengr28
+// Copyright (C) 2012-2016 Chengr28
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////
 // Operating system
 // 
-/* This code is from Qt source, which is in qglobal.h header file.
+/* This code is from Qt source, which in qglobal.h header file.
 // See https://www.qt.io/developers
 
 	The operating system, must be one of: (PLATFORM_x)
@@ -72,7 +72,7 @@
 #elif defined(__OS2__)
 #  if defined(__EMX__)
 #    define PLATFORM_OS2EMX
-#  else
+#  else 
 #    define PLATFORM_OS2
 #  endif
 #elif !defined(SAG_COM) && (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))
@@ -124,7 +124,7 @@
 #  define PLATFORM_DYNIX
 #elif defined(_SCO_DS)                   /* SCO OpenServer 5 + GCC */
 #  define PLATFORM_SCO
-#elif defined(__USLC__)                  /* all SCO platforms + UDK or OUDK */
+#elif defined(__USLC__)                  /* All SCO platforms + UDK or OUDK */
 #  define PLATFORM_UNIXWARE
 #  define PLATFORM_UNIXWARE7
 #elif defined(__svr4__) && defined(i386) /* Open UNIX 8 + GCC */
@@ -135,7 +135,7 @@
 #  error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
 #endif
 
-//System series defines
+//System series definitions
 #if defined(PLATFORM_WIN32) || defined(PLATFORM_WIN64)
 #  define PLATFORM_WIN
 #endif
@@ -147,7 +147,7 @@
 #elif !defined(PLATFORM_UNIX)
 #  define PLATFORM_UNIX
 #endif
-/* XCode support
+/* Apple Mac OS X XCode support
 #if defined(PLATFORM_MACX)
 #  ifdef MAC_OS_X_VERSION_MIN_REQUIRED
 #    undef MAC_OS_X_VERSION_MIN_REQUIRED
@@ -166,40 +166,40 @@
 #endif
 */
 
+
 //////////////////////////////////////////////////
 // Base header
 // 
+//Preprocessor definitions
 #if (defined(PLATFORM_WIN) || defined(PLATFORM_MACX))
-	#define ENABLE_LIBSODIUM       //LibSodium is always enable on Windows and Mac OS X.
+	#define ENABLE_LIBSODIUM           //LibSodium is always enable in Windows and Mac OS X.
 #endif
 
 //C Standard Library and C++ Standard Template Library/STL headers
 #include <cstdio>                  //File Input/Output
-#include <cstdlib>                 //Several general purpose functions.
-#if !defined(ENABLE_LIBSODIUM)
-	#if (defined(PLATFORM_LINUX) || defined(PLATFORM_MACX))
-		#include <cwchar>                  //Wide-Character Support
-	#endif
-#else
+#include <cstdlib>                 //Several general purpose functions
 #include <cstring>                 //String support
+#include <cwchar>                  //Wide-Character Support
 #include <memory>                  //Manage dynamic memory support
+#include <string>                  //String support(STL)
 
+#if defined(ENABLE_LIBSODIUM)
 #if defined(PLATFORM_WIN)
-	#include <windows.h>               //Microsoft Windows master include file
+	#include <windows.h>               //Master include file in Windows
 
 //LibSodium header and static libraries
+	#define SODIUM_STATIC              //LibSodium static linking always enable in Windows and Mac OS X
 	#include "..\\LibSodium\\sodium.h"
 	#if defined(PLATFORM_WIN64)
-		#pragma comment(lib, "..\\LibSodium\\LibSodium_x64.lib") //LibSodium library(x64)
+		#pragma comment(lib, "..\\LibSodium\\LibSodium_x64.lib")
 	#elif (defined(PLATFORM_WIN32) && !defined(PLATFORM_WIN64))
-		#pragma comment(lib, "..\\LibSodium\\LibSodium_x86.lib") //LibSodium library(x86)
+		#pragma comment(lib, "..\\LibSodium\\LibSodium_x86.lib")
 	#endif
-
-//	#pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup") //Hide console.
-//Add "WPCAP", "HAVE_REMOTE", "SODIUM_STATIC" and "SODIUM_EXPORT=" to preprocessor options.
 #elif defined(PLATFORM_LINUX)
 	#include <sodium.h>            //LibSodium header
 #elif defined(PLATFORM_MACX)
+	#define SODIUM_STATIC              //LibSodium static linking always enable in Windows and Mac OS X
+
 //LibSodium header and static libraries
 	#include "../LibSodium/sodium.h"
 	#pragma comment(lib, "../LibSodium/LibSodium_Mac.a")
@@ -207,26 +207,135 @@
 
 
 //////////////////////////////////////////////////
-// Base defines
+// Base definitions
 // 
 #pragma pack(1)                        //Memory alignment: 1 bytes/8 bits
 #define KEYPAIR_MESSAGE_LEN    80U     //Keypair messages length
 #define KEYPAIR_INTERVAL       4U
 
-//ASCII values defines
+//ASCII values definitions
 #define ASCII_LF               10      //"␊"
 #define ASCII_DLE              16      //"␐"
 #define ASCII_COLON            58      //":"
 
-//Linux and Mac OS X compatible
-#if (defined(PLATFORM_LINUX) || defined(PLATFORM_MACX))
-	typedef char               *PSTR;
-	#define __fastcall
-	#define strnlen_s          strnlen
-	#define wprintf_s          wprintf
-	#define fwprintf_s         fwprintf
+#if defined(ENABLE_LIBSODIUM)
+	#define LIBSODIUM_ERROR          (-1)
 #endif
 
-//Functions
-void __fastcall CaseConvert(const bool IsLowerToUpper, PSTR Buffer, const size_t Length);
+#if (defined(PLATFORM_LINUX) || defined(PLATFORM_MACX))
+//Linux and Mac OS X compatible
+	#define __fastcall
+	#define fwprintf_s         fwprintf
+	#define strnlen_s          strnlen	
+#endif
+
+//Function definitions
+#define crypto_box_keypair crypto_box_curve25519xsalsa20poly1305_keypair
+
+//DNSCurveHeapBufferTable template class
+template<typename Ty> class DNSCurveHeapBufferTable {
+public:
+	Ty                         *Buffer;
+	size_t                     BufferSize;
+
+//Member functions
+	DNSCurveHeapBufferTable(
+		void);
+	DNSCurveHeapBufferTable(
+		const size_t Size);
+	DNSCurveHeapBufferTable(
+		const size_t Count, 
+		const size_t Size);
+	void Swap(
+		DNSCurveHeapBufferTable &Other);
+	~DNSCurveHeapBufferTable(
+		void);
+};
+template<typename Ty> using DNSCURVE_HEAP_BUFFER_TABLE = DNSCurveHeapBufferTable<Ty>;
+
+
+//////////////////////////////////////////////////
+// Main functions
+// 
+void __fastcall CaseConvert(
+	const bool IsLowerToUpper, 
+	char *Buffer, 
+	const size_t Length);
+
+
+//////////////////////////////////////////////////
+// Template functions
+// 
+//DNSCurveHeapBufferTable template class constructor
+//DNSCurveHeapBufferTable template class constructor
+template<typename Ty> DNSCurveHeapBufferTable<Ty>::DNSCurveHeapBufferTable(
+	void)
+{
+	Buffer = nullptr;
+	BufferSize = 0;
+
+	return;
+}
+
+//DNSCurveHeapBufferTable template class constructor
+template<typename Ty> DNSCurveHeapBufferTable<Ty>::DNSCurveHeapBufferTable(
+	const size_t Size)
+{
+	Buffer = (Ty *)sodium_malloc(Size);
+	if (Buffer == nullptr)
+	{
+		exit(EXIT_FAILURE);
+		return;
+	}
+	else {
+		sodium_memzero(Buffer, Size);
+		BufferSize = Size;
+	}
+
+	return;
+}
+
+//DNSCurveHeapBufferTable template class constructor
+template<typename Ty> DNSCurveHeapBufferTable<Ty>::DNSCurveHeapBufferTable(
+	const size_t Count, 
+	const size_t Size)
+{
+	Buffer = (Ty *)sodium_allocarray(Count, Size);
+	if (Buffer == nullptr)
+	{
+		exit(EXIT_FAILURE);
+		return;
+	}
+	else {
+		sodium_memzero(Buffer, Count * Size);
+		BufferSize = Count * Size;
+	}
+
+	return;
+}
+
+//DNSCurveHeapBufferTable template class Swap function
+template<typename Ty> void DNSCurveHeapBufferTable<Ty>::Swap(
+	DNSCurveHeapBufferTable &Other)
+{
+	auto BufferTemp = this->Buffer;
+	this->Buffer = Other->Buffer;
+	Other->Buffer = BufferTemp;
+	auto BufferSizeTemp = this->BufferSize;
+	this->BufferSize = Other->BufferSize;
+	Other->BufferSize = BufferSizeTemp;
+
+	return;
+}
+
+//DNSCurveHeapBufferTable template class destructor
+template<typename Ty> DNSCurveHeapBufferTable<Ty>::~DNSCurveHeapBufferTable(
+	void)
+{
+	sodium_free(Buffer);
+	Buffer = nullptr;
+	BufferSize = 0;
+
+	return;
+}
 #endif

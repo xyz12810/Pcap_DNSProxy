@@ -1,6 +1,6 @@
 # This code is part of Pcap_DNSProxy
 # A local DNS server based on WinPcap and LibPcap
-# Copyright (C) 2012-2015 Chengr28
+# Copyright (C) 2012-2016 Chengr28
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,16 +24,12 @@ ELSE(PLATFORM_OPENWRT)
 	cmake_minimum_required(VERSION 3.0.2)
 ENDIF(PLATFORM_OPENWRT)
 
-# Project name
+# Project name and build type
 project(Pcap_DNSProxy)
-
-# Release version
 set(CMAKE_BUILD_TYPE "Release")
 
 # All source files
 set(MAIN_SRC_FILES
-		"Platform.h"
-		"Structures.h"
 		"Base.h"
 		"Capture.h"
 		"Configuration.h"
@@ -43,10 +39,13 @@ set(MAIN_SRC_FILES
 		"Monitor.h"
 		"Network.h"
 		"PacketData.h"
+		"Platform.h"
 		"PrintLog.h"
 		"Process.h"
 		"Protocol.h"
+		"Proxy.h"
 		"Service.h"
+		"Structures.h"
 		"Base.cpp"
 		"Capture.cpp"
 		"Configuration.cpp"
@@ -59,18 +58,29 @@ set(MAIN_SRC_FILES
 		"PrintLog.cpp"
 		"Process.cpp"
 		"Protocol.cpp"
+		"Proxy.cpp"
 		"ReadHosts.cpp"
 		"ReadIPFilter.cpp"
 		"ReadParameter.cpp"
 		"Service.cpp")
 
+# Libraries linking(Part 1)
+find_package(Threads REQUIRED)
+
 # Compiling and linking flags
-IF(PLATFORM_OPENWRT)
+## C++ 11 standard definitions
+IF(CMAKE_VERSION VERSION_LESS "3.1")
 	add_definitions(-std=c++11)
+ELSE(CMAKE_VERSION VERSION_LESS "3.1")
+	set(CMAKE_CXX_STANDARD 11)
+ENDIF(CMAKE_VERSION VERSION_LESS "3.1")
+## Platform definitions
+IF(PLATFORM_OPENWRT)
 	add_definitions(-DPLATFORM_OPENWRT)
 ELSE(PLATFORM_OPENWRT)
-	add_definitions(-std=c++11 -fpic)
+	add_definitions(-fpic)
 ENDIF(PLATFORM_OPENWRT)
+## Library definitions
 IF(ENABLE_PCAP)
 	add_definitions(-DENABLE_PCAP)
 ENDIF(ENABLE_PCAP)
@@ -78,14 +88,20 @@ IF(ENABLE_LIBSODIUM)
 	add_definitions(-DENABLE_LIBSODIUM)
 ENDIF(ENABLE_LIBSODIUM)
 
+# Link to static libraries if needed
+IF(STATIC_LIB)
+	SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+	SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive")
+ENDIF(STATIC_LIB)
+
 # Executable file name
 add_executable(Pcap_DNSProxy ${MAIN_SRC_FILES})
 IF(PLATFORM_OPENWRT)
 	INSTALL(TARGETS Pcap_DNSProxy RUNTIME DESTINATION sbin)
 ENDIF(PLATFORM_OPENWRT)
 
-# Libraries linking
-target_link_libraries(Pcap_DNSProxy pthread)
+# Libraries linking(Part 2)
+target_link_libraries(Pcap_DNSProxy ${CMAKE_THREAD_LIBS_INIT})
 IF(ENABLE_PCAP)
 	target_link_libraries(Pcap_DNSProxy pcap)
 ENDIF(ENABLE_PCAP)

@@ -1,11 +1,36 @@
 :: Pcap_DNSProxy service control batch
 :: A local DNS server based on WinPcap and LibPcap
+:: Author: Hugo Chan, wongsyrone, Chengr28
 
 
 @echo off
 
+:: Administrative permission check
+net session >NUL 2>NUL
+if ERRORLEVEL 1 (
+	color 4F
+	echo Please run as Administrator.
+	echo.
+	pause & break
+	echo.
+	exit
+)
+
+
+:: Processor architecture and system version check
+set Arch=
+if %PROCESSOR_ARCHITECTURE%%PROCESSOR_ARCHITEW6432% == x86 (
+	set Arch=_x86
+)
+ver | findstr /I " 5.1" > NUL
+if not ERRORLEVEL 1 (
+	set Arch=_XP
+)
+set Prog=Pcap_DNSProxy%Arch%.exe
+
 
 :: Choice
+:CHOICE
 echo Pcap_DNSProxy service control batch
 echo.
 echo 1: Install service
@@ -14,6 +39,8 @@ echo 3: Start service
 echo 4: Stop service
 echo 5: Restart service
 echo 6: Flush DNS cache in Pcap_DNSProxy
+echo 7: Flush DNS cache in system only
+echo 8: Exit
 echo.
 set /P UserChoice="Choose: "
 set UserChoice=CASE_%UserChoice%
@@ -21,119 +48,111 @@ cd /D "%~dp0"
 cls
 goto %UserChoice%
 
-:: Service Install part
-:: Author: Hugo Chan, Chengr28
+
+:: Service install
 :CASE_1
 	sc stop PcapDNSProxyService
 	sc delete PcapDNSProxyService
 	ping 127.0.0.1 -n 3 >nul
-	if %PROCESSOR_ARCHITECTURE%%PROCESSOR_ARCHITEW6432% == x86 (goto X86) else (goto X64)
 
-	:X86
-	sc create PcapDNSProxyService binPath= "%~dp0Pcap_DNSProxy_x86.exe" DisplayName= "PcapDNSProxy Service" start= auto
-	reg add HKLM\SYSTEM\CurrentControlSet\Services\PcapDNSProxyService\Parameters /v Application /d "%~dp0Pcap_DNSProxy_x86.exe" /f
+	sc create PcapDNSProxyService binPath= "%~dp0%Prog%" DisplayName= "PcapDNSProxy Service" start= auto
+	reg add HKLM\SYSTEM\CurrentControlSet\Services\PcapDNSProxyService\Parameters /v Application /d "%~dp0%Prog%" /f
 	reg add HKLM\SYSTEM\CurrentControlSet\Services\PcapDNSProxyService\Parameters /v AppDirectory /d "%~dp0" /f
-	Pcap_DNSProxy_x86.exe --first-setup
-	goto Exit
+	%Prog% --first-setup
 
-	:X64
-	sc create PcapDNSProxyService binPath= "%~dp0Pcap_DNSProxy.exe" DisplayName= "PcapDNSProxy Service" start= auto
-	reg add HKLM\SYSTEM\CurrentControlSet\Services\PcapDNSProxyService\Parameters /v Application /d "%~dp0Pcap_DNSProxy.exe" /f
-	reg add HKLM\SYSTEM\CurrentControlSet\Services\PcapDNSProxyService\Parameters /v AppDirectory /d "%~dp0" /f
-	Pcap_DNSProxy.exe --first-setup
-
-	:Exit
 	sc description PcapDNSProxyService "A local DNS server based on WinPcap and LibPcap"
 	sc failure PcapDNSProxyService reset= 0 actions= restart/5000/restart/10000//
 	sc start PcapDNSProxyService
 	ipconfig /flushdns
-	ping 127.0.0.1 -n 3 >nul
-	if %PROCESSOR_ARCHITECTURE%%PROCESSOR_ARCHITEW6432% == x86 (
-		Tasklist |findstr /I "Pcap_DNSProxy_x86.exe" > NUL
-	) else (
-		Tasklist |findstr /I "Pcap_DNSProxy.exe" > NUL
-	)
-	if ERRORLEVEL 1 (
-		echo.
-		echo Service start failed, please check the configurations.
-	)
-	echo.
+	call :CHECK_PROG
 	pause
-	exit
+	cls
+	goto :CHOICE
 
 
-:: Service Uninstall part
-:: Author: Chengr28
+:: Service uninstall
 :CASE_2
 	sc stop PcapDNSProxyService
 	sc delete PcapDNSProxyService
+	ping 127.0.0.1 -n 3 >nul
 	ipconfig /flushdns
 	echo.
 	pause
-	exit
+	cls
+	goto :CHOICE
 
 
-:: Service Start part
-:: Author: Hugo Chan, Chengr28
+:: Service start
 :CASE_3
 	sc start PcapDNSProxyService
+	ping 127.0.0.1 -n 3 >nul
 	ipconfig /flushdns
 	ping 127.0.0.1 -n 3 >nul
-	if %PROCESSOR_ARCHITECTURE%%PROCESSOR_ARCHITEW6432% == x86 (
-		Tasklist |findstr /I "Pcap_DNSProxy_x86.exe" > NUL
-	) else (
-		Tasklist |findstr /I "Pcap_DNSProxy.exe" > NUL
-	)
-	if ERRORLEVEL 1 (
-		echo.
-		echo Service start failed, please check the configurations.
-	)
-	echo.
+	call :CHECK_PROG
 	pause
-	exit
+	cls
+	goto :CHOICE
 
 
-:: Service Stop part
-:: Author: Chengr28
+:: Service stop
 :CASE_4
 	sc stop PcapDNSProxyService
+	ping 127.0.0.1 -n 3 >nul
 	ipconfig /flushdns
 	echo.
 	pause
-	exit
+	cls
+	goto :CHOICE
 
 
-:: Service Restart part
-:: Author: Chengr28
+:: Service restart
 :CASE_5
 	sc stop PcapDNSProxyService
 	ping 127.0.0.1 -n 3 >nul
 	sc start PcapDNSProxyService
-	ipconfig /flushdns
 	ping 127.0.0.1 -n 3 >nul
-	if %PROCESSOR_ARCHITECTURE%%PROCESSOR_ARCHITEW6432% == x86 (
-		Tasklist |findstr /I "Pcap_DNSProxy_x86.exe" > NUL
-	) else (
-		Tasklist |findstr /I "Pcap_DNSProxy.exe" > NUL
-	)
-	if ERRORLEVEL 1 (
-		echo.
-		echo Service start failed, please check the configurations.
-	)
-	echo.
+	ipconfig /flushdns
+	call :CHECK_PROG
 	pause
-	exit
+	cls
+	goto :CHOICE
 
 
-:: Flush DNS cache part
-:: Author: Chengr28
+:: Flush DNS cache(Pcap_DNSProxy)
 :CASE_6
-	echo.
-	if %PROCESSOR_ARCHITECTURE%%PROCESSOR_ARCHITEW6432% == x86 (
-		Pcap_DNSProxy_x86.exe --flush-dns
-	) else (
-		Pcap_DNSProxy.exe --flush-dns
-	)
+	call :CHECK_PROG
+	%Prog% --flush-dns
 	echo.
 	pause
+	cls
+	goto :CHOICE
+
+
+:: Flush DNS cache(System)
+:CASE_7
+	ipconfig /flushdns
+	echo.
+	pause
+	cls
+	goto :CHOICE
+
+
+:: Exit
+:CASE_8
 	exit
+
+
+:: Process check
+:CHECK_PROG
+	tasklist | findstr /I "%Prog%" > NUL
+	if ERRORLEVEL 1 (
+		color 4F
+		echo.
+		echo The program is not running, please check the configurations and error log.
+		echo.
+		pause
+		color 07
+		cls
+		goto :CHOICE
+	)
+	echo.

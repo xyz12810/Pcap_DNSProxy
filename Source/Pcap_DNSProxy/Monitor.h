@@ -1,6 +1,6 @@
 ﻿// This code is part of Pcap_DNSProxy
 // A local DNS server based on WinPcap and LibPcap
-// Copyright (C) 2012-2015 Chengr28
+// Copyright (C) 2012-2016 Chengr28
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,20 +21,32 @@
 
 //Global variables
 extern CONFIGURATION_TABLE Parameter;
+extern GLOBAL_STATUS GlobalRunningStatus;
 extern ALTERNATE_SWAP_TABLE AlternateSwapList;
 #if defined(ENABLE_LIBSODIUM)
-	extern DNSCURVE_CONFIGURATON_TABLE DNSCurveParameter;
+	extern DNSCURVE_CONFIGURATION_TABLE DNSCurveParameter;
 #endif
 extern std::mutex LocalAddressLock[NETWORK_LAYER_PARTNUM];
 
 //Functions
-bool __fastcall UDPMonitor(const SOCKET_DATA LocalSocketData);
-bool __fastcall TCPMonitor(const SOCKET_DATA LocalSocketData);
-bool __fastcall TCPReceiveProcess(const SOCKET_DATA LocalSocketData);
-void __fastcall AlternateServerMonitor(void);
+bool __fastcall UDPMonitor(
+	const SOCKET_DATA LocalSocketData, 
+	bool *Result);
+bool __fastcall TCPMonitor(
+	const SOCKET_DATA LocalSocketData, 
+	bool *Result);
+bool __fastcall TCPReceiveProcess(
+	const SOCKET_DATA LocalSocketData);
+void __fastcall AlternateServerMonitor(
+	void);
 #if defined(PLATFORM_WIN)
-	PADDRINFOA __fastcall GetLocalAddressList(const uint16_t Protocol, PSTR HostName);
+addrinfo * __fastcall GetLocalAddressList(
+	const uint16_t Protocol, 
+	char *HostName);
 #elif (defined(PLATFORM_LINUX) || defined(PLATFORM_MACX))
-	bool GetBestInterfaceAddress(const uint16_t Protocol, const sockaddr_storage *OriginalSockAddr);
+bool GetBestInterfaceAddress(
+	const uint16_t Protocol, 
+	const sockaddr_storage *OriginalSockAddr);
 #endif
-void __fastcall GetGatewayInformation(const uint16_t Protocol);
+void __fastcall GetGatewayInformation(
+	const uint16_t Protocol);
